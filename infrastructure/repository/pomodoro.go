@@ -8,9 +8,10 @@ import (
 )
 
 type pomodoroDTO struct {
-	ID       string
-	Duration int
-	Status   string
+	ID              string
+	PlannedDuration int
+	Status          string
+	StartTime       string
 }
 
 type SqlLitePomodoroRepository struct {
@@ -19,27 +20,34 @@ type SqlLitePomodoroRepository struct {
 
 func (r *SqlLitePomodoroRepository) Create(p *pomodoro.Pomodoro) error {
 	dto := pomodoroDTO{
-		ID:       p.ID,
-		Duration: int(p.Duration),
-		Status:   string(p.Status),
+		ID:              p.ID,
+		PlannedDuration: int(p.PlannedDuration),
+		Status:          string(p.Status),
+		StartTime:       p.StartTime.Format(time.RFC3339Nano),
 	}
 
-	_, err := r.db.Exec("INSERT INTO pomodoro (id, duration, status) VALUES (?, ?, ?)", dto.ID, dto.Duration, dto.Status)
+	_, err := r.db.Exec("INSERT INTO pomodoro (id, duration, status, start_time) VALUES (?, ?, ?, ?)", dto.ID, dto.PlannedDuration, dto.Status, dto.StartTime)
 	return err
 }
 
 func (r *SqlLitePomodoroRepository) FindByID(id string) *pomodoro.Pomodoro {
 	var dto pomodoroDTO
 
-	err := r.db.QueryRow("SELECT id, duration, status FROM pomodoro WHERE id = ?", id).Scan(&dto.ID, &dto.Duration, &dto.Status)
+	err := r.db.QueryRow("SELECT id, duration, status, start_time FROM pomodoro WHERE id = ?", id).Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
+	if err != nil {
+		return nil
+	}
+
+	startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
 	if err != nil {
 		return nil
 	}
 
 	return &pomodoro.Pomodoro{
-		ID:       dto.ID,
-		Duration: time.Duration(dto.Duration),
-		Status:   pomodoro.Status(dto.Status),
+		ID:              dto.ID,
+		PlannedDuration: time.Duration(dto.PlannedDuration),
+		StartTime:       startTime,
+		Status:          pomodoro.Status(dto.Status),
 	}
 }
 

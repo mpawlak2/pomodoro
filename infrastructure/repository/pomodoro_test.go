@@ -38,6 +38,7 @@ func TestPersistPomodoro(t *testing.T) {
 
 	repo := NewSqlLitePomodoroRepository(db)
 	pomodoro := pomodoro.NewPomodoro(25 * time.Minute)
+	pomodoro.Start()
 
 	err = repo.Create(pomodoro)
 	if err != nil {
@@ -49,8 +50,12 @@ func TestPersistPomodoro(t *testing.T) {
 		t.Errorf("Expected to find pomodoro, but got nil")
 	}
 
-	if pomo.Duration != pomodoro.Duration {
-		t.Errorf("Expected pomodoro duration to be %v, but got %v", pomodoro.Duration, pomo.Duration)
+	if pomo.PlannedDuration != pomodoro.PlannedDuration {
+		t.Errorf("Expected pomodoro duration to be %v, but got %v", pomodoro.PlannedDuration, pomo.PlannedDuration)
+	}
+
+	if !pomo.StartTime.Equal(pomodoro.StartTime) {
+		t.Errorf("Expected pomodoro start time to be %v, but got %v", pomodoro.StartTime, pomo.StartTime)
 	}
 
 	if pomo.ID != pomodoro.ID {

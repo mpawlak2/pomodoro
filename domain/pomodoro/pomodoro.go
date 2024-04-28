@@ -9,22 +9,23 @@ import (
 type Status string
 
 const (
-	StatusPending  Status = "Pending"
-	StatusRunning  Status = "Running"
-	StatusFinished Status = "Finished"
+	StatusPending   Status = "Pending"
+	StatusRunning   Status = "Running"
+	StatusFinished  Status = "Finished"
+	StatusCancelled Status = "Cancelled"
 )
 
 type Pomodoro struct {
-	ID       string
-	Duration time.Duration
-	Status   Status
-	Note     string
-
-	startTime time.Time
+	ID              string
+	PlannedDuration time.Duration
+	Status          Status
+	Note            string
+	StartTime       time.Time
+	FinishTime      time.Time
 }
 
 func (p *Pomodoro) Start() {
-	p.startTime = time.Now()
+	p.StartTime = time.Now()
 	p.Status = StatusRunning
 }
 
@@ -33,19 +34,32 @@ func (p *Pomodoro) Finish(note string) {
 	p.Status = StatusFinished
 }
 
-func (p *Pomodoro) RemainingTime() time.Duration {
-	if p.Status == StatusRunning {
-		elapsed := time.Since(p.startTime)
-		return p.Duration - elapsed
-	}
-
-	return p.Duration
+func (p *Pomodoro) Cancel() {
+	p.Status = StatusCancelled
+	p.FinishTime = time.Now()
 }
 
-func NewPomodoro(duration time.Duration) *Pomodoro {
+func (p *Pomodoro) RemainingTime() time.Duration {
+	if p.Status == StatusRunning {
+		elapsed := time.Since(p.StartTime)
+		return p.PlannedDuration - elapsed
+	}
+
+	return p.PlannedDuration
+}
+
+func (p *Pomodoro) ElapsedDuration() time.Duration {
+	if p.Status == StatusRunning {
+		return time.Since(p.StartTime)
+	}
+
+	return p.FinishTime.Sub(p.StartTime)
+}
+
+func NewPomodoro(plannedDuration time.Duration) *Pomodoro {
 	return &Pomodoro{
-		ID:       uuid.New().String(),
-		Duration: duration,
-		Status:   StatusPending,
+		ID:              uuid.New().String(),
+		PlannedDuration: plannedDuration,
+		Status:          StatusPending,
 	}
 }
