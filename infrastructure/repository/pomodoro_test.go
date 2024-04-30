@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -10,15 +11,22 @@ import (
 	"github.com/mpawlak2/pomodoro/domain/pomodoro"
 )
 
-func TestSqlLitePomodoroRepository(t *testing.T) {
-	defer os.Remove("./test.db")
+var db *sql.DB
 
-	db, err := sql.Open("sqlite3", "./test.db")
+func TestMain(m *testing.M) {
+	var err error
+	db, err = sql.Open("sqlite3", "./test.db")
 	if err != nil {
-		t.Errorf("Error opening SQLite database: %v", err)
+		log.Fatal(err)
 	}
+	InitializeSqlLiteDB(db)
 	defer db.Close()
 
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestSqlLitePomodoroRepository(t *testing.T) {
 	repo := NewSqlLitePomodoroRepository(db)
 
 	if repo.db == nil {
@@ -27,20 +35,11 @@ func TestSqlLitePomodoroRepository(t *testing.T) {
 }
 
 func TestPersistPomodoro(t *testing.T) {
-	defer os.Remove("./test.db") // todo: make it possible to run tests in parallel A: it could be done by using a different database file for each test or by using a different table for each test
-
-	db, err := sql.Open("sqlite3", "./test.db")
-	if err != nil {
-		t.Errorf("Error opening SQLite database: %v", err)
-	}
-	InitializeSqlLiteDB(db)
-	defer db.Close()
-
 	repo := NewSqlLitePomodoroRepository(db)
 	pomodoro := pomodoro.NewPomodoro(25 * time.Minute)
 	pomodoro.Start()
 
-	err = repo.Create(pomodoro)
+	err := repo.Create(pomodoro)
 	if err != nil {
 		t.Errorf("Error persisting pomodoro: %v", err)
 	}
