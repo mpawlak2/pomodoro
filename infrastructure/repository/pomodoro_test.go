@@ -15,7 +15,7 @@ var db *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = sql.Open("sqlite3", "./test.db")
+	db, err = sql.Open("sqlite3", "./test.db") // todo: is there a way to create a global database for all integration tests?
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,5 +63,25 @@ func TestPersistPomodoro(t *testing.T) {
 
 	if pomo.Status != pomodoro.Status {
 		t.Errorf("Expected pomodoro status to be %v, but got %v", pomodoro.Status, pomo.Status)
+	}
+}
+
+func TestFindAllPomodoros(t *testing.T) {
+	repo := NewSqlLitePomodoroRepository(db)
+	pomodoro := pomodoro.NewPomodoro(25 * time.Minute)
+	pomodoro.Start()
+
+	err := repo.Create(pomodoro)
+	if err != nil {
+		t.Errorf("Error persisting pomodoro: %v", err)
+	}
+
+	pomodoros, err := repo.FindAll()
+	if err != nil {
+		t.Errorf("Error finding all pomodoros: %v", err)
+	}
+
+	if len(pomodoros) < 1 {
+		t.Errorf("Expected to find at least 1 pomodoro, but got %v", len(pomodoros))
 	}
 }

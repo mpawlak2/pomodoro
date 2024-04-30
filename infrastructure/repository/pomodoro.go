@@ -51,6 +51,38 @@ func (r *SqlLitePomodoroRepository) FindByID(id string) *pomodoro.Pomodoro {
 	}
 }
 
+func (r *SqlLitePomodoroRepository) FindAll() ([]*pomodoro.Pomodoro, error) {
+	rows, err := r.db.Query("SELECT id, duration, status, start_time FROM pomodoro")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var pomodoros []*pomodoro.Pomodoro
+	for rows.Next() {
+		var dto pomodoroDTO
+		err := rows.Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
+		if err != nil {
+			return nil, err
+		}
+
+		startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
+		if err != nil {
+			return nil, err
+		}
+
+		pomodoros = append(pomodoros, &pomodoro.Pomodoro{
+			ID:              dto.ID,
+			PlannedDuration: time.Duration(dto.PlannedDuration),
+			StartTime:       startTime,
+			Status:          pomodoro.Status(dto.Status),
+		})
+	}
+
+	return pomodoros, nil
+
+}
+
 func NewSqlLitePomodoroRepository(db *sql.DB) *SqlLitePomodoroRepository {
 	return &SqlLitePomodoroRepository{
 		db: db,
