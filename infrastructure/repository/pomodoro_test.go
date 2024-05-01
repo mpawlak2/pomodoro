@@ -47,6 +47,7 @@ func TestPersistPomodoro(t *testing.T) {
 	pomo := repo.FindByID(pomodoro.ID)
 	if pomo == nil {
 		t.Errorf("Expected to find pomodoro, but got nil")
+		panic("unreachable") // dirty fix for staticcheck SA5011
 	}
 
 	if pomo.PlannedDuration != pomodoro.PlannedDuration {
