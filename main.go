@@ -17,9 +17,13 @@ func main() {
 	repository.InitializeSqlLiteDB(db)
 	defer db.Close()
 
-	pomo := pomodoro.NewPomodoro(25 * time.Minute)
-	pomo.Start()
-
 	repo := repository.NewSqlLitePomodoroRepository(db)
+	pomodoroService := pomodoro.NewPomodoroService(repo)
+
+	pomo, err := pomodoroService.CreatePomodoro(25 * time.Minute)
+	if err != nil {
+		panic(err)
+	}
+	pomo.Start()
 	repo.Create(pomo)
 }

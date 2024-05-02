@@ -30,17 +30,17 @@ func (r *SqlLitePomodoroRepository) Create(p *pomodoro.Pomodoro) error {
 	return err
 }
 
-func (r *SqlLitePomodoroRepository) FindByID(id string) *pomodoro.Pomodoro {
+func (r *SqlLitePomodoroRepository) FindByID(id string) (*pomodoro.Pomodoro, error) {
 	var dto pomodoroDTO
 
 	err := r.db.QueryRow("SELECT id, duration, status, start_time FROM pomodoro WHERE id = ?", id).Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &pomodoro.Pomodoro{
@@ -48,7 +48,28 @@ func (r *SqlLitePomodoroRepository) FindByID(id string) *pomodoro.Pomodoro {
 		PlannedDuration: time.Duration(dto.PlannedDuration),
 		StartTime:       startTime,
 		Status:          pomodoro.Status(dto.Status),
+	}, nil
+}
+
+func (r *SqlLitePomodoroRepository) FindActive() (*pomodoro.Pomodoro, error) {
+	var dto pomodoroDTO
+
+	err := r.db.QueryRow("SELECT id, duration, status, start_time FROM pomodoro WHERE status = ?", pomodoro.StatusRunning).Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
+	if err != nil {
+		return nil, err
 	}
+
+	startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pomodoro.Pomodoro{
+		ID:              dto.ID,
+		PlannedDuration: time.Duration(dto.PlannedDuration),
+		StartTime:       startTime,
+		Status:          pomodoro.Status(dto.Status),
+	}, nil
 }
 
 func (r *SqlLitePomodoroRepository) FindAll() ([]*pomodoro.Pomodoro, error) {

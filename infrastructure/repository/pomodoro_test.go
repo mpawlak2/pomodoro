@@ -44,7 +44,11 @@ func TestPersistPomodoro(t *testing.T) {
 		t.Errorf("Error persisting pomodoro: %v", err)
 	}
 
-	pomo := repo.FindByID(pomodoro.ID)
+	pomo, err := repo.FindByID(pomodoro.ID)
+	if err != nil {
+		t.Errorf("Error finding pomodoro: %v", err)
+	}
+
 	if pomo == nil {
 		t.Errorf("Expected to find pomodoro, but got nil")
 		panic("unreachable") // dirty fix for staticcheck SA5011
@@ -64,6 +68,32 @@ func TestPersistPomodoro(t *testing.T) {
 
 	if pomo.Status != pomodoro.Status {
 		t.Errorf("Expected pomodoro status to be %v, but got %v", pomodoro.Status, pomo.Status)
+	}
+}
+
+func TestFindActivePomodoro(t *testing.T) {
+	db.Exec("DELETE FROM pomodoro") // todo: how to handle this? How to ensure the tests can be executed in parallel?
+	repo := NewSqlLitePomodoroRepository(db)
+	pomodoro := pomodoro.NewPomodoro(25 * time.Minute)
+	pomodoro.Start()
+
+	err := repo.Create(pomodoro)
+	if err != nil {
+		t.Errorf("Error persisting pomodoro: %v", err)
+	}
+
+	activePomodoro, err := repo.FindActive()
+	if err != nil {
+		t.Errorf("Error finding active pomodoro: %v", err)
+	}
+
+	if activePomodoro == nil {
+		t.Errorf("Expected to find active pomodoro, but got nil")
+		panic("unreachable") // dirty fix for staticcheck SA5011
+	}
+
+	if activePomodoro.ID != pomodoro.ID {
+		t.Errorf("Expected active pomodoro ID to be %v, but got %v", pomodoro.ID, activePomodoro.ID)
 	}
 }
 
