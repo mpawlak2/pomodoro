@@ -30,50 +30,13 @@ func (r *SqlLitePomodoroRepository) Create(p *pomodoro.Pomodoro) error {
 	return err
 }
 
-func (r *SqlLitePomodoroRepository) FindByID(id string) (*pomodoro.Pomodoro, error) {
-	var dto pomodoroDTO
-
-	err := r.db.QueryRow("SELECT id, duration, status, start_time FROM pomodoro WHERE id = ?", id).Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
-	if err != nil {
-		return nil, err
+func (r *SqlLitePomodoroRepository) findManyPomodoros(where string, args ...interface{}) ([]*pomodoro.Pomodoro, error) {
+	query := "SELECT id, duration, status, start_time FROM pomodoro"
+	if where != "" {
+		query += " WHERE " + where
 	}
 
-	startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pomodoro.Pomodoro{
-		ID:              dto.ID,
-		PlannedDuration: time.Duration(dto.PlannedDuration),
-		StartTime:       startTime,
-		Status:          pomodoro.Status(dto.Status),
-	}, nil
-}
-
-func (r *SqlLitePomodoroRepository) FindActive() (*pomodoro.Pomodoro, error) {
-	var dto pomodoroDTO
-
-	err := r.db.QueryRow("SELECT id, duration, status, start_time FROM pomodoro WHERE status = ?", pomodoro.StatusRunning).Scan(&dto.ID, &dto.PlannedDuration, &dto.Status, &dto.StartTime)
-	if err != nil {
-		return nil, err
-	}
-
-	startTime, err := time.Parse(time.RFC3339Nano, dto.StartTime)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pomodoro.Pomodoro{
-		ID:              dto.ID,
-		PlannedDuration: time.Duration(dto.PlannedDuration),
-		StartTime:       startTime,
-		Status:          pomodoro.Status(dto.Status),
-	}, nil
-}
-
-func (r *SqlLitePomodoroRepository) FindAll() ([]*pomodoro.Pomodoro, error) {
-	rows, err := r.db.Query("SELECT id, duration, status, start_time FROM pomodoro")
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +64,33 @@ func (r *SqlLitePomodoroRepository) FindAll() ([]*pomodoro.Pomodoro, error) {
 	}
 
 	return pomodoros, nil
+}
 
+func (r *SqlLitePomodoroRepository) findPomodoro(where string, args ...interface{}) (*pomodoro.Pomodoro, error) {
+	pomodoros, err := r.findManyPomodoros(where, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pomodoros) == 0 {
+		return nil, nil
+	}
+
+	// todo: if more than one pomodoro is found, return an error
+
+	return pomodoros[0], nil
+}
+
+func (r *SqlLitePomodoroRepository) FindByID(id string) (*pomodoro.Pomodoro, error) {
+	return r.findPomodoro("id = ?", id)
+}
+
+func (r *SqlLitePomodoroRepository) FindActive() (*pomodoro.Pomodoro, error) {
+	return r.findPomodoro("status = ?", pomodoro.StatusRunning)
+}
+
+func (r *SqlLitePomodoroRepository) FindAll() ([]*pomodoro.Pomodoro, error) {
+	return r.findManyPomodoros("")
 }
 
 func NewSqlLitePomodoroRepository(db *sql.DB) *SqlLitePomodoroRepository {
