@@ -37,7 +37,8 @@ func RunApplication() {
 						return err
 					}
 					for _, pomo := range pomos {
-						fmt.Println(pomo)
+						formatter := NewPomodoroFormatter(pomo)
+						fmt.Println(formatter)
 					}
 					return nil
 				},
