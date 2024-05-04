@@ -72,7 +72,8 @@ func RunApplication() {
 						return err
 					}
 					pomo.Finish(note)
-					fmt.Println(pomo)
+					repo.Update(pomo)
+					fmt.Println(NewPomodoroFormatter(pomo))
 					return nil
 				},
 			},

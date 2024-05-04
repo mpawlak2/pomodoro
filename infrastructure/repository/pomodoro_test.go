@@ -116,3 +116,47 @@ func TestFindAllPomodoros(t *testing.T) {
 		t.Errorf("Expected to find at least 1 pomodoro, but got %v", len(pomodoros))
 	}
 }
+
+func TestUpdatePomodoro(t *testing.T) {
+	repo := NewSqlLitePomodoroRepository(db)
+	pomodoro := pomodoro.NewPomodoro(25 * time.Minute)
+	pomodoro.Start()
+
+	err := repo.Create(pomodoro)
+	if err != nil {
+		t.Errorf("Error persisting pomodoro: %v", err)
+	}
+
+	pomodoro.Finish("Test note")
+	expectedFinishedTime := pomodoro.FinishTime
+	err = repo.Update(pomodoro)
+	if err != nil {
+		t.Errorf("Error updating pomodoro: %v", err)
+	}
+
+	pomo, err := repo.FindByID(pomodoro.ID)
+	if err != nil {
+		t.Errorf("Error finding pomodoro: %v", err)
+	}
+
+	if pomo == nil {
+		t.Errorf("Expected to find pomodoro, but got nil")
+		panic("unreachable") // dirty fix for staticcheck SA5011
+	}
+
+	if pomo.Status != pomodoro.Status {
+		t.Errorf("Expected pomodoro status to be %v, but got %v", pomodoro.Status, pomo.Status)
+	}
+
+	if pomo.Note != pomodoro.Note {
+		t.Errorf("Expected pomodoro note to be %v, but got %v", pomodoro.Note, pomo.Note)
+	}
+
+	if pomo.FinishTime.IsZero() {
+		t.Errorf("Expected finish time to be set, but got zero")
+	}
+
+	if !pomo.FinishTime.Equal(expectedFinishedTime) {
+		t.Errorf("Expected finish time to be %v, but got %v", expectedFinishedTime, pomo.FinishTime)
+	}
+}

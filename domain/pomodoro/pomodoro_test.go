@@ -58,6 +58,10 @@ func TestCompletePomodoro(t *testing.T) {
 		t.Errorf("Expected status to be Finished, but got %v", p.Status)
 	}
 
+	if p.FinishTime.IsZero() {
+		t.Errorf("Expected finish time to be set, but got zero")
+	}
+
 	if p.Note != "This is a test note." {
 		t.Errorf("Expected note to be 'This is a test note.', but got %v", p.Note)
 	}

@@ -24,6 +24,17 @@ func (r *MockPomodoroRepository) FindByID(id string) (*Pomodoro, error) {
 	return nil, nil
 }
 
+func (r *MockPomodoroRepository) Update(p *Pomodoro) error {
+	for i, pom := range r.pomodoros {
+		if pom.ID == p.ID {
+			r.pomodoros[i] = p
+			return nil
+		}
+	}
+
+	return nil
+}
+
 func (r *MockPomodoroRepository) FindAll() ([]*Pomodoro, error) {
 	return r.pomodoros, nil
 }

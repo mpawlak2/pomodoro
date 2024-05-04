@@ -10,7 +10,7 @@ func InitializeSqlLiteDB(db *sql.DB) {
 
 	migrations := map[string]func(*sql.DB) error{
 		"M001CreatePomodoroTable": func(db *sql.DB) error {
-			_, err := db.Exec("CREATE TABLE pomodoro (id TEXT PRIMARY KEY, duration INTEGER, status TEXT, start_time TEXT)")
+			_, err := db.Exec("CREATE TABLE pomodoro (id TEXT PRIMARY KEY, duration INTEGER, status TEXT, start_time TEXT, finish_time TEXT, note TEXT)")
 			return err
 		},
 	}

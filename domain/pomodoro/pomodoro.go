@@ -32,6 +32,7 @@ func (p *Pomodoro) Start() {
 func (p *Pomodoro) Finish(note string) {
 	p.Note = note
 	p.Status = StatusFinished
+	p.FinishTime = time.Now()
 }
 
 func (p *Pomodoro) Cancel() {
