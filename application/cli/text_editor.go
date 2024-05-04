@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-var FailedToGetInputError = errors.New("failed to get input")
+var ErrFailedToGetInput = errors.New("failed to get input")
 
 func GetInputFromTextEditor() (string, error) {
 	filename := "POMODORO_MESSAGE.txt"
@@ -26,13 +26,13 @@ func GetInputFromTextEditor() (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		return "", FailedToGetInputError
+		return "", ErrFailedToGetInput
 	}
 
 	// read the file
 	content, err := os.ReadFile(filename)
 	if err != nil {
-		return "", FailedToGetInputError
+		return "", ErrFailedToGetInput
 	}
 
 	return string(content), nil
