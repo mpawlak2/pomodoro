@@ -22,11 +22,18 @@ func (f *PomodoroFormatter) String() string {
 	builder.WriteString("\n")
 	builder.WriteString(fmt.Sprintf("%-20s %s", "Status:", f.pomo.Status))
 	builder.WriteString("\n")
-	builder.WriteString(fmt.Sprintf("%-20s %s", "Note:", f.pomo.Note))
-	builder.WriteString("\n")
 	builder.WriteString(fmt.Sprintf("%-20s %s", "Start time:", f.pomo.StartTime))
 	builder.WriteString("\n")
 	builder.WriteString(fmt.Sprintf("%-20s %s", "Finish time:", f.pomo.FinishTime))
+
+	builder.WriteString("\n")
+	builder.WriteString("\n")
+	note := f.pomo.Note
+	if note != "" {
+		note = strings.TrimSuffix(note, "\n")
+	}
+	builder.WriteString(fmt.Sprintf("    %s", note))
+	builder.WriteString("\n")
 
 	return builder.String()
 }

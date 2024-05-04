@@ -65,7 +65,13 @@ func RunApplication() {
 				Action: func(cCtx *cli.Context) error {
 					note := cCtx.Args().First()
 					if note == "" {
-						return fmt.Errorf("note is required")
+						note, err = GetInputFromTextEditor()
+						if err != nil {
+							return err
+						}
+						if note == "" {
+							return fmt.Errorf("note is required")
+						}
 					}
 					pomo, err := repo.FindActive()
 					if err != nil {
