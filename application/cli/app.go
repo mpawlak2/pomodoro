@@ -59,6 +59,23 @@ func RunApplication() {
 				},
 			},
 			{
+				Name:  "status",
+				Usage: "show status of the current pomodoro",
+				Action: func(cCtx *cli.Context) error {
+					pomo, err := repo.FindActive()
+					if err != nil {
+						return err
+					}
+
+					if pomo == nil {
+						return fmt.Errorf("no active pomodoro")
+					}
+					formatter := NewPomodoroFormatter(pomo)
+					fmt.Println(formatter.RemainingTime())
+					return nil
+				},
+			},
+			{
 				Name:    "done",
 				Aliases: []string{"d"},
 				Usage:   "finish a pomodoro",
