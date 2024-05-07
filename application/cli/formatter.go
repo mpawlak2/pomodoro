@@ -42,7 +42,7 @@ func (f *PomodoroFormatter) RemainingTime() string {
 	remainingTime := f.pomo.PlannedDuration - f.pomo.ElapsedDuration()
 	minutes := int(remainingTime.Minutes())
 	seconds := int(remainingTime.Seconds()) - (minutes * 60)
-	return fmt.Sprintf("🍅%02.0dm%02.0ds", minutes, seconds)
+	return fmt.Sprintf("🍅%02dm%02ds", minutes, seconds)
 }
 
 func NewPomodoroFormatter(pomo *pomodoro.Pomodoro) *PomodoroFormatter {
