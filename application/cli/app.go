@@ -8,12 +8,14 @@ import (
 	"time"
 
 	"github.com/mpawlak2/pomodoro/domain/pomodoro"
+	"github.com/mpawlak2/pomodoro/infrastructure"
 	"github.com/mpawlak2/pomodoro/infrastructure/repository"
 	"github.com/urfave/cli/v2"
 )
 
 func RunApplication() {
-	db, err := sql.Open("sqlite3", "pomodoro.db")
+	databaseLocation := infrastructure.GetCacheDir() + "/pomodoro.db"
+	db, err := sql.Open("sqlite3", databaseLocation)
 	if err != nil {
 		panic(err)
 	}

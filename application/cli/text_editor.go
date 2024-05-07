@@ -5,12 +5,14 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/mpawlak2/pomodoro/infrastructure"
 )
 
 var ErrFailedToGetInput = errors.New("failed to get input")
 
 func GetInputFromTextEditor() (string, error) {
-	filename := "POMODORO_MESSAGE.txt"
+	filename := infrastructure.GetCacheDir() + "/POMODORO_MESSAGE.txt"
 	editor := "vim"
 
 	file, err := os.Create(filename)
