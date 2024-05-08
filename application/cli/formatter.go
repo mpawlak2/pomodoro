@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/fatih/color"
@@ -41,8 +42,8 @@ func (f *PomodoroFormatter) String() string {
 func (f *PomodoroFormatter) RemainingTime() string {
 	remainingTime := f.pomo.PlannedDuration - f.pomo.ElapsedDuration()
 	minutes := int(remainingTime.Minutes())
-	seconds := int(remainingTime.Seconds()) - (minutes * 60)
-	return fmt.Sprintf("🍅%02dm%02ds", minutes, seconds)
+	seconds := int(math.Abs(remainingTime.Seconds() - float64(minutes*60)))
+	return fmt.Sprintf("🍅 %02dm %02ds", minutes, seconds)
 }
 
 func NewPomodoroFormatter(pomo *pomodoro.Pomodoro) *PomodoroFormatter {
